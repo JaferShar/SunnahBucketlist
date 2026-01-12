@@ -2,18 +2,22 @@ import { useState, useEffect } from 'react';
 import { Sunnah, Difficulty, Category } from '../types';
 import { SunnahService } from '../services/sunnah.service';
 import { useCompletedSunnahs } from './useProgress';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export function useSunnahs() {
   const [sunnahs, setSunnahs] = useState<Sunnah[]>([]);
   const [loading, setLoading] = useState(true);
+  const { language } = useLanguage();
 
   useEffect(() => {
     loadSunnahs();
-  }, []);
+  }, [language]); // Reload when language changes
 
   const loadSunnahs = async () => {
     try {
       setLoading(true);
+      // Reload sunnahs for the current language
+      await SunnahService.reloadForLanguage(language);
       const data = await SunnahService.getAllSunnahs();
       setSunnahs(data);
     } catch (error) {
@@ -29,6 +33,7 @@ export function useSunnahs() {
 export function useDailySunnah(date: string, difficulty: Difficulty | null) {
   const [sunnah, setSunnah] = useState<Sunnah | null>(null);
   const [loading, setLoading] = useState(true);
+  const { language } = useLanguage();
 
   useEffect(() => {
     if (difficulty) {
@@ -37,13 +42,15 @@ export function useDailySunnah(date: string, difficulty: Difficulty | null) {
       setSunnah(null);
       setLoading(false);
     }
-  }, [date, difficulty]);
+  }, [date, difficulty, language]); // Reload when language changes
 
   const loadDailySunnah = async () => {
     if (!difficulty) return;
-    
+
     try {
       setLoading(true);
+      // Ensure sunnahs are loaded for current language
+      await SunnahService.reloadForLanguage(language);
       const data = await SunnahService.getDailySunnah(date, difficulty);
       setSunnah(data);
     } catch (error) {
@@ -103,4 +110,3 @@ export function useFilteredSunnahs(
 
   return { sunnahs: filtered, loading };
 }
-

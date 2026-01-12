@@ -3,20 +3,32 @@ import { StorageService } from './storage.service';
 import { StorageKeys } from '../constants/storageKeys';
 import { getSampleSunnahs } from '../data/sunnahs';
 import { SettingsService } from './settings.service';
+import { Language } from '../types/settings';
 
 export class SunnahService {
   private static sunnahs: Sunnah[] = [];
+  private static currentLanguage: Language | null = null;
 
   static async initialize(): Promise<void> {
+    const settings = await SettingsService.getSettings();
     const stored = await StorageService.getItem<Sunnah[]>(StorageKeys.SUNNAHS);
-    if (stored && stored.length > 0) {
+    
+    // Check if we need to reload based on language change
+    if (stored && stored.length > 0 && this.currentLanguage === settings.language) {
       this.sunnahs = stored;
-    } else {
-      // Initialize with sample data based on current language setting
-      const settings = await SettingsService.getSettings();
-      this.sunnahs = [...getSampleSunnahs(settings.language)];
-      await StorageService.setItem(StorageKeys.SUNNAHS, this.sunnahs);
+      return;
     }
+
+    // If language changed or no data exists, initialize with sample data for current language
+    this.currentLanguage = settings.language;
+    this.sunnahs = [...getSampleSunnahs(settings.language)];
+    await StorageService.setItem(StorageKeys.SUNNAHS, this.sunnahs);
+  }
+
+  static async reloadForLanguage(language: Language): Promise<void> {
+    this.currentLanguage = language;
+    this.sunnahs = [...getSampleSunnahs(language)];
+    await StorageService.setItem(StorageKeys.SUNNAHS, this.sunnahs);
   }
 
   static async getAllSunnahs(): Promise<Sunnah[]> {

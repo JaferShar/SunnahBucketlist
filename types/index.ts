@@ -6,7 +6,6 @@ export interface Sunnah {
   title: string;
   description: string;
   category: Category;
-  reward: string;
   difficulty: Difficulty;
   source: string;
 }
@@ -39,4 +38,3 @@ export interface CalendarDay {
   completed: boolean;
   difficulty?: Difficulty;
 }
-

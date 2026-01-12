@@ -6,7 +6,14 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const { width } = Dimensions.get('window');
-const DAY_SIZE = Math.floor((width - Spacing.md * 2 - Spacing.sm * 14) / 7);
+// Calculate day size to fit 6 rows (42 days total: 7 columns x 6 rows)
+// Account for parent container padding (Spacing.md on each side from calendar.tsx)
+// and spacing between days
+const PARENT_PADDING = Spacing.md * 2; // Parent container padding in calendar.tsx
+const DAY_MARGIN = Spacing.xs / 2;
+const TOTAL_DAY_MARGINS = DAY_MARGIN * 14; // 7 days * 2 margins per day
+const AVAILABLE_WIDTH = width - PARENT_PADDING;
+const DAY_SIZE = Math.floor((AVAILABLE_WIDTH - TOTAL_DAY_MARGINS) / 7);
 
 interface CalendarProps {
   year: number;
@@ -32,26 +39,39 @@ export function Calendar({ year, month, days, onDayPress }: CalendarProps) {
   const daysInMonth = lastDay.getDate();
   const startingDayOfWeek = firstDay.getDay();
 
-  const getDayColor = (dayData: { completed: boolean; difficulty?: Difficulty } | undefined) => {
+  // Calculate days from previous month
+  const previousMonth = month === 0 ? 11 : month - 1;
+  const previousMonthYear = month === 0 ? year - 1 : year;
+  const previousMonthLastDay = new Date(previousMonthYear, previousMonth + 1, 0);
+  const daysInPreviousMonth = previousMonthLastDay.getDate();
+  
+  // Calculate days from next month needed to fill 6 rows (42 days total)
+  const totalCells = 42; // 7 columns x 6 rows
+  const currentMonthCells = startingDayOfWeek + daysInMonth;
+  const nextMonthDaysNeeded = Math.max(0, totalCells - currentMonthCells);
+
+  const getDayColor = (dayData: { completed: boolean; difficulty?: Difficulty } | undefined, isCurrentMonth: boolean) => {
+    if (!isCurrentMonth) return colors.border;
     if (!dayData) return colors.border;
     if (dayData.completed) return colors.calendarCompleted;
     return colors.calendarIncomplete;
   };
 
-  const isToday = (day: number) => {
+  const isToday = (day: number, isCurrentMonth: boolean, checkMonth: number, checkYear: number) => {
+    if (!isCurrentMonth) return false;
     const today = new Date();
     return (
       day === today.getDate() &&
-      month === today.getMonth() &&
-      year === today.getFullYear()
+      checkMonth === today.getMonth() &&
+      checkYear === today.getFullYear()
     );
   };
 
-  const renderDay = (day: number, index: number) => {
-    const date = new Date(year, month, day);
+  const renderDay = (day: number, index: number, isCurrentMonth: boolean, checkMonth: number, checkYear: number) => {
+    const date = new Date(checkYear, checkMonth, day);
     const dateStr = date.toISOString().split('T')[0];
-    const dayData = days[dateStr];
-    const today = isToday(day);
+    const dayData = isCurrentMonth ? days[dateStr] : undefined;
+    const today = isToday(day, isCurrentMonth, checkMonth, checkYear);
 
     return (
       <TouchableOpacity
@@ -59,26 +79,30 @@ export function Calendar({ year, month, days, onDayPress }: CalendarProps) {
         style={[
           styles.day,
           {
-            backgroundColor: getDayColor(dayData),
+            backgroundColor: getDayColor(dayData, isCurrentMonth),
             borderWidth: today ? 2 : 0,
             borderColor: today ? colors.calendarToday : 'transparent',
+            opacity: isCurrentMonth ? 1 : 0.4,
           },
         ]}
-        onPress={() => onDayPress?.(dateStr)}
-        activeOpacity={0.7}
+        onPress={() => isCurrentMonth && onDayPress?.(dateStr)}
+        disabled={!isCurrentMonth}
+        activeOpacity={isCurrentMonth ? 0.7 : 1}
       >
         <Text
           style={[
             styles.dayText,
             {
-              color: dayData?.completed ? colors.surface : colors.textSecondary,
+              color: isCurrentMonth 
+                ? (dayData?.completed ? colors.surface : colors.textSecondary)
+                : colors.textTertiary,
             },
-            today && { color: colors.textPrimary, fontWeight: '700' },
+            today && isCurrentMonth && { color: colors.textPrimary, fontWeight: '700' },
           ]}
         >
           {day}
         </Text>
-        {dayData?.difficulty && (
+        {isCurrentMonth && dayData?.difficulty && (
           <View
             style={[
               styles.difficultyDot,
@@ -97,21 +121,51 @@ export function Calendar({ year, month, days, onDayPress }: CalendarProps) {
     );
   };
 
-  const calendarDays: (number | null)[] = [];
+  const calendarDays: { day: number; isCurrentMonth: boolean; month: number; year: number }[] = [];
   
-  // Add empty cells for days before the first day of the month
-  for (let i = 0; i < startingDayOfWeek; i++) {
-    calendarDays.push(null);
+  // Add days from previous month
+  const daysFromPreviousMonth = startingDayOfWeek;
+  for (let i = daysFromPreviousMonth - 1; i >= 0; i--) {
+    const day = daysInPreviousMonth - i;
+    calendarDays.push({
+      day,
+      isCurrentMonth: false,
+      month: previousMonth,
+      year: previousMonthYear,
+    });
   }
   
-  // Add all days of the month
+  // Add all days of the current month
   for (let day = 1; day <= daysInMonth; day++) {
-    calendarDays.push(day);
+    calendarDays.push({
+      day,
+      isCurrentMonth: true,
+      month,
+      year,
+    });
   }
+  
+  // Add days from next month to fill 6 rows
+  const nextMonth = month === 11 ? 0 : month + 1;
+  const nextMonthYear = month === 11 ? year + 1 : year;
+  for (let day = 1; day <= nextMonthDaysNeeded; day++) {
+    calendarDays.push({
+      day,
+      isCurrentMonth: false,
+      month: nextMonth,
+      year: nextMonthYear,
+    });
+  }
+
+  // Calculate the exact width needed for the calendar grid
+  const gridWidth = DAY_SIZE * 7 + TOTAL_DAY_MARGINS;
+  // Calculate remaining space and divide equally for centering
+  const remainingSpace = AVAILABLE_WIDTH - gridWidth;
+  const horizontalPadding = remainingSpace / 2;
 
   return (
     <View style={styles.container}>
-      <View style={styles.weekDays}>
+      <View style={[styles.weekDays, { paddingHorizontal: horizontalPadding }]}>
         {weekDays.map((day, index) => (
           <View key={index} style={styles.weekDay}>
             <Text style={[styles.weekDayText, { color: colors.textTertiary }]} numberOfLines={1}>
@@ -121,13 +175,9 @@ export function Calendar({ year, month, days, onDayPress }: CalendarProps) {
         ))}
       </View>
 
-      <View style={styles.daysContainer}>
-        {calendarDays.map((day, index) =>
-          day !== null ? (
-            renderDay(day, index)
-          ) : (
-            <View key={index} style={styles.day} />
-          )
+      <View style={[styles.daysContainer, { paddingHorizontal: horizontalPadding }]}>
+        {calendarDays.map((calendarDay, index) =>
+          renderDay(calendarDay.day, index, calendarDay.isCurrentMonth, calendarDay.month, calendarDay.year)
         )}
       </View>
 
@@ -141,7 +191,7 @@ export function Calendar({ year, month, days, onDayPress }: CalendarProps) {
         <View style={styles.legendItem}>
           <View style={[styles.legendColor, { backgroundColor: colors.calendarIncomplete }]} />
           <Text style={[styles.legendText, { color: colors.textSecondary }]} numberOfLines={1}>
-            {t('calendar.legend.pending')}
+            {t('calendar.legend.incomplete')}
           </Text>
         </View>
       </View>
@@ -156,7 +206,6 @@ const styles = StyleSheet.create({
   weekDays: {
     flexDirection: 'row',
     marginBottom: Spacing.xs,
-    paddingHorizontal: Spacing.xs / 2,
   },
   weekDay: {
     width: DAY_SIZE,
@@ -171,12 +220,11 @@ const styles = StyleSheet.create({
   daysContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: Spacing.xs / 2,
   },
   day: {
     width: DAY_SIZE,
     height: DAY_SIZE,
-    margin: Spacing.xs / 2,
+    margin: DAY_MARGIN,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',

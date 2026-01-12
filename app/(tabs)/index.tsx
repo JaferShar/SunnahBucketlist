@@ -45,8 +45,15 @@ export default function TodayScreen() {
   }, [difficulty]);
 
   const handleDifficultySelect = (selectedDifficulty: Difficulty) => {
-    if (!lockedDifficulty) {
-      setPreviewDifficulty(selectedDifficulty);
+    // Allow changing difficulty if not completed
+    if (!completed) {
+      // If already locked, unlock it first and set as preview
+      if (lockedDifficulty) {
+        setLockedDifficulty(null);
+        setPreviewDifficulty(selectedDifficulty);
+      } else {
+        setPreviewDifficulty(selectedDifficulty);
+      }
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   };
@@ -139,7 +146,7 @@ export default function TodayScreen() {
         <DifficultySelector
           selected={lockedDifficulty || previewDifficulty}
           onSelect={handleDifficultySelect}
-          disabled={lockedDifficulty !== null || completed}
+          disabled={completed}
         />
 
         {sunnahLoading && activeDifficulty ? (

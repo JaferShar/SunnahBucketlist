@@ -157,7 +157,7 @@ export const translations = {
     
     // Library Screen
     'library.title': 'Bibliothek',
-    'library.search.placeholder': 'Sunnas suchen...',
+    'library.search.placeholder': 'Sunnahs suchen...',
     'library.filters.title': 'Filter',
     'library.filters.difficulty': 'Schwierigkeit:',
     'library.filters.category': 'Kategorie:',
@@ -166,9 +166,9 @@ export const translations = {
     'library.filters.completed': 'Abgeschlossen',
     'library.filters.incomplete': 'Nicht abgeschlossen',
     'library.stats.showing': 'Zeige',
-    'library.stats.sunnahs': 'Sunnas',
+    'library.stats.sunnahs': 'Sunnahs',
     'library.stats.completed': 'abgeschlossen',
-    'library.empty': 'Keine Sunnas gefunden, die deinen Filtern entsprechen.',
+    'library.empty': 'Keine Sunnahs gefunden, die deinen Filtern entsprechen.',
     'library.filters.completion': 'Abschluss:',
     
     // Settings Screen

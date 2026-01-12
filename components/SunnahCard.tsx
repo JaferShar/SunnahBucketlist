@@ -9,11 +9,11 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 interface SunnahCardProps {
   sunnah: Sunnah;
-  showReward?: boolean;
   showSource?: boolean;
+  isCompleted?: boolean;
 }
 
-export function SunnahCard({ sunnah, showReward = true, showSource = true }: SunnahCardProps) {
+export function SunnahCard({ sunnah, showSource = true, isCompleted = false }: SunnahCardProps) {
   const { colors } = useTheme();
   const { t } = useLanguage();
   
@@ -28,19 +28,13 @@ export function SunnahCard({ sunnah, showReward = true, showSource = true }: Sun
       
       <Text style={[styles.description, { color: colors.textSecondary }]}>{sunnah.description}</Text>
 
-      {showReward && (
-        <View style={[styles.rewardContainer, { backgroundColor: colors.primaryLight + '40' }]}>
-          <Text style={[styles.rewardLabel, { color: colors.textPrimary }]}>
-            {t('sunnah.reward')}:
-          </Text>
-          <Text style={[styles.reward, { color: colors.textSecondary }]}>{sunnah.reward}</Text>
-        </View>
-      )}
-
       {showSource && (
-        <Text style={[styles.source, { color: colors.textTertiary }]}>
-          {t('sunnah.source')}: {sunnah.source}
-        </Text>
+        <View style={[styles.sourceContainer, { backgroundColor: colors.primaryLight + '40' }]}>
+          <Text style={[styles.sourceLabel, { color: colors.textPrimary }]}>
+            {t('sunnah.source')}:
+          </Text>
+          <Text style={[styles.source, { color: colors.textSecondary }]}>{sunnah.source}</Text>
+        </View>
       )}
     </Card>
   );
@@ -65,23 +59,19 @@ const styles = StyleSheet.create({
     lineHeight: Typography.lineHeight.md,
     marginBottom: Spacing.md,
   },
-  rewardContainer: {
+  sourceContainer: {
     padding: Spacing.md,
     borderRadius: 12,
     marginBottom: Spacing.md,
   },
-  rewardLabel: {
+  sourceLabel: {
     fontSize: Typography.fontSize.sm,
     fontWeight: '600',
     marginBottom: Spacing.xs,
   },
-  reward: {
+  source: {
     fontSize: Typography.fontSize.md,
     lineHeight: Typography.lineHeight.md,
-    fontStyle: 'italic',
-  },
-  source: {
-    fontSize: Typography.fontSize.sm,
     fontStyle: 'italic',
   },
 });

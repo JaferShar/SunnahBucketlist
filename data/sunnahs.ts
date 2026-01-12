@@ -9,9 +9,8 @@ const sampleSunnahsData: Record<Language, Sunnah[]> = {
       title: 'Saying Bismillah Before Eating',
       description: 'Before you begin your meal, say "Bismillah" (In the name of Allah) aloud or silently. This simple act of remembrance brings barakah (blessing) to your food and aligns your intention with gratitude to Allah.',
       category: 'daily',
-      reward: 'This practice brings barakah to your meal and reminds you of Allah\'s blessings. The Prophet (ﷺ) said that mentioning Allah\'s name before eating makes the food blessed.',
       difficulty: 'easy',
-      source: 'Sahih Bukhari, Sahih Muslim',
+      source: 'This practice brings barakah to your meal and reminds you of Allah\'s blessings. The Prophet (ﷺ) said that mentioning Allah\'s name before eating makes the food blessed. - Sahih Bukhari, Sahih Muslim',
     },
   ],
   de: [
@@ -20,9 +19,8 @@ const sampleSunnahsData: Record<Language, Sunnah[]> = {
       title: 'Bismillah vor dem Essen sagen',
       description: 'Bevor du mit deiner Mahlzeit beginnst, sage "Bismillah" (Im Namen Allahs) laut oder leise. Diese einfache Erinnerung bringt Barakah (Segen) zu deinem Essen und richtet deine Absicht auf Dankbarkeit zu Allah aus.',
       category: 'daily',
-      reward: 'Diese Praxis bringt Barakah zu deiner Mahlzeit und erinnert dich an Allahs Segnungen. Der Prophet (ﷺ) sagte, dass das Erwähnen von Allahs Namen vor dem Essen das Essen gesegnet macht.',
       difficulty: 'easy',
-      source: 'Sahih Bukhari, Sahih Muslim',
+      source: 'Diese Praxis bringt Barakah zu deiner Mahlzeit und erinnert dich an Allahs Segnungen. Der Prophet (ﷺ) sagte, dass das Erwähnen von Allahs Namen vor dem Essen das Essen gesegnet macht. - Sahih Bukhari, Sahih Muslim',
     },
   ],
 };
